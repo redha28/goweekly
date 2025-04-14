@@ -94,7 +94,51 @@ func main() {
 	fmt.Printf("fibo: %v\n", fibo)
 	fmt.Printf("even nums: %v\n", even)
 
-	// task 7
-	printSeparator("Task 7")
-	task8.RunTask8()
+	// task 8
+	printSeparator("Task 8")
+	var wgTask8 sync.WaitGroup
+	var mu sync.Mutex
+
+	// Channel dengan buffer
+	results := make(chan int, 5)
+	inisialValue := 10
+
+	// Menjalankan goroutine untuk fungsi SumNum
+	for i := 1; i <= inisialValue; i++ {
+		wgTask8.Add(1)
+		go task8.SumNum(i, inisialValue, results, &wgTask8)
+	}
+
+	// Goroutine untuk membaca hasil
+	wgTask8.Add(1)
+	go func() {
+		defer wgTask8.Done()
+		total := 0
+		count := 0
+
+		// Membaca dari channel sebanyak inisialValue kali
+		for count < inisialValue {
+			sum := <-results
+			mu.Lock()
+			total += sum
+			fmt.Printf("Hasil penjumlahan: %d\n", sum)
+			fmt.Printf("Status bilangan: %s\n", task8.PrintOddEven(sum))
+			mu.Unlock()
+			count++
+		}
+
+		mu.Lock()
+		fmt.Printf("Total keseluruhan: %d\n", total)
+		mu.Unlock()
+	}()
+
+	// Menutup channel setelah semua goroutine selesai
+	go func() {
+		wgTask8.Wait()
+		close(results)
+	}()
+
+	wgTask8.Wait()
+	fmt.Println("Program selesai!")
+
 }

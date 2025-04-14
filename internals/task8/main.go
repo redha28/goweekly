@@ -5,30 +5,15 @@ import (
 	"sync"
 )
 
-func RunTask8() {
-	var wg sync.WaitGroup
-	var mu sync.Mutex
+func SumNum(num1 int, num2 int, result chan int, wgTask8 *sync.WaitGroup) {
+	defer wgTask8.Done()
+	sum := num1 + num2
+	result <- sum
+}
 
-	numbers := []int{1, 2, 3, 4, 5}
-	ch := make(chan int, len(numbers)) // buffered channel
-	total := 0
-
-	for range numbers {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			num := <-ch
-			mu.Lock()
-			total += num
-			mu.Unlock()
-		}()
+func PrintOddEven(num int) string {
+	if num%2 == 0 {
+		return fmt.Sprint("Genap")
 	}
-
-	for _, n := range numbers {
-		ch <- n
-	}
-	close(ch)
-
-	wg.Wait()
-	fmt.Println("Total penjumlahan:", total)
+	return fmt.Sprint("Ganjil")
 }
